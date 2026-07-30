@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "farhand: chat-driven orchestration of a shared computational-chemistry workstation"
+abstract: >-
+  Submit, monitor, arbitrate and post-process computational chemistry jobs on a
+  single shared workstation from a chat client, with no shell access to the
+  machine.
+type: software
+authors:
+  - family-names: Turner
+    given-names: Adam H.
+    affiliation: "Ateneo de Manila University"
+    orcid: "https://orcid.org/REPLACE-WITH-YOUR-ORCID"
+version: 0.1.0
+date-released: 2026-07-30
+license: MIT
+repository-code: "https://github.com/turneradam/farhand"
+keywords:
+  - computational chemistry
+  - workflow
+  - remote execution
+  - resource scheduling
