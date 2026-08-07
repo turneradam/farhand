@@ -25,13 +25,6 @@ acquire() {
   echo ok
 }
 
-case "${1:-}" in
-  holder)  holder  "${2:?usage: arena.sh holder <token>}" ;;
-  acquire) acquire "${2:?usage: arena.sh acquire <engine>}" ;;
-  release) release "${2:?usage: arena.sh release <engine>}" ;;
-  *) echo "usage: arena.sh {holder <token>|acquire <engine>|release <engine>}" >&2; exit 2 ;;
-esac
-
 release() {
   local engine="$1"
   local token="cpu_hi"
@@ -41,3 +34,10 @@ release() {
   fi
   echo released
 }
+
+case "${1:-}" in
+  holder)  holder  "${2:?usage: arena.sh holder <token>}" ;;
+  acquire) acquire "${2:?usage: arena.sh acquire <engine>}" ;;
+  release) release "${2:?usage: arena.sh release <engine>}" ;;
+  *) echo "usage: arena.sh {holder <token>|acquire <engine>|release <engine>}" >&2; exit 2 ;;
+esac
