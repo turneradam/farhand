@@ -3,7 +3,10 @@
 # The file's contents indicate the holder of the lease (cpu, gpu, etc.)
 set -u
 
+
 ARENA="${FARHAND_ARENA:-$HOME/.local/state/farhand/arena}"
+LOCK="$ARENA/.lock"
+mkdir -p "$ARENA"
 
 holder() {
 	cat "$ARENA/$1.lease" 2>/dev/null || true
@@ -13,6 +16,9 @@ acquire() {
   local engine="$1"
   local token="cpu_hi"
   local who
+
+  exec 9>"$LOCK"
+  flock 9
 
   who="$(holder "$token")"
 
@@ -28,6 +34,9 @@ acquire() {
 release() {
   local engine="$1"
   local token="cpu_hi"
+
+  exec 9>"$LOCK"
+  flock 9
 
   if [ "$(holder "$token")" = "$engine" ]; then
     rm -f "$ARENA/$token.lease"
