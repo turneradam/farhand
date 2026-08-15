@@ -58,9 +58,11 @@ release() {
   exec 9>"$LOCK"
   flock 9
 
-  if [ "$(holder "$token")" = "$engine" ]; then
-    rm -f "$ARENA/$token.lease"
-  fi
+  for t in $need; do
+    if [ "$(holder "$t")" = "$engine" ]; then
+      rm -f "$ARENA/$t.lease"
+    fi
+  done
   echo released
 }
 
