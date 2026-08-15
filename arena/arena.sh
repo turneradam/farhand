@@ -12,28 +12,48 @@ holder() {
 	cat "$ARENA/$1.lease" 2>/dev/null || true
 }
 
+tokens() {
+  case "$1" in
+    qe|orca|raspa) echo "cpu_hi" ;;
+    raspa_e)       echo "ecores" ;;
+    lammps)        echo "cpu_lo gpu" ;;
+    *) echo "unknown engine: $1" >&2; return 2 ;;
+  esac
+}
+
 acquire() {
   local engine="$1"
-  local token="cpu_hi"
-  local who
+  local t who blocked="" need
+
+  need="$(tokens "$engine")" || return 2
 
   exec 9>"$LOCK"
   flock 9
 
-  who="$(holder "$token")"
+  for t in $need; do
+    who="$(holder "$t")"
+    if [ -n "$who" ] && [ "$who" != "$engine" ]; then
+      blocked="$t:$who"
+      break
+    fi
+  done
 
-  if [ -n "$who" ] && [ "$who" != "$engine" ]; then
-    echo "busy ($token:$who)"
+  if [ -n "$blocked" ]; then
+    echo "busy ($blocked)"
     return 1
   fi
 
-  echo "$engine" > "$ARENA/$token.lease"
+  for t in $need; do
+    echo "$engine" > "$ARENA/$t.lease"
+  done
   echo ok
 }
 
 release() {
   local engine="$1"
-  local token="cpu_hi"
+  local t need
+
+  need="$(tokens "$engine")" || return 2
 
   exec 9>"$LOCK"
   flock 9
@@ -48,5 +68,6 @@ case "${1:-}" in
   holder)  holder  "${2:?usage: arena.sh holder <token>}" ;;
   acquire) acquire "${2:?usage: arena.sh acquire <engine>}" ;;
   release) release "${2:?usage: arena.sh release <engine>}" ;;
+  tokens) tokens  "${2:?usage: arena.sh tokens <engine>}" ;;
   *) echo "usage: arena.sh {holder <token>|acquire <engine>|release <engine>}" >&2; exit 2 ;;
 esac
