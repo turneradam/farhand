@@ -71,5 +71,5 @@ case "${1:-}" in
   acquire) acquire "${2:?usage: arena.sh acquire <engine>}" ;;
   release) release "${2:?usage: arena.sh release <engine>}" ;;
   tokens) tokens  "${2:?usage: arena.sh tokens <engine>}" ;;
-  *) echo "usage: arena.sh {holder <token>|acquire <engine>|release <engine>}" >&2; exit 2 ;;
+*) echo "usage: arena.sh {holder <token>|acquire <engine>|release <engine>|tokens <engine>}" >&2; exit 2 ;;
 esac
