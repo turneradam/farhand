@@ -14,7 +14,33 @@ if [ ! -f "$CONF" ]; then
 fi
 
 engine_conf() {
-  ... as above ...
+  local want="$1" key="$2"
+  local section="" line k v
+
+  while read -r line; do
+    case "$line" in
+      '['*']')
+        section="${line#[}"
+        section="${section%]}"
+        continue
+        ;;
+      ''|'#'*) continue ;;
+    esac
+
+    [ "$section" = "$want" ] || continue
+
+    k="${line%%=*}"
+    v="${line#*=}"
+    k="$(printf '%s' "$k" | tr -d '[:space:]')"
+    v="${v# }"
+
+    if [ "$k" = "$key" ]; then
+      printf '%s\n' "$v"
+      return 0
+    fi
+  done < "$CONF"
+
+  return 1
 }
 
 pin="$(engine_conf "$ENGINE" pin)"    || { echo "launch: no pin for $ENGINE" >&2; exit 2; }
