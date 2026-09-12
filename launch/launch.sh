@@ -92,7 +92,7 @@ else
   fi
 fi
 
+set_state status "$result"
+
 echo "launch: exit=$rc result=$result" >&2
 [ "$result" = "done" ]
-
-set_state status "$result"

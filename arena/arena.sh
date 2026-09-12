@@ -9,7 +9,7 @@ LOCK="$ARENA/.lock"
 mkdir -p "$ARENA"
 
 holder() {
-	cat "$ARENA/$1.lease" 2>/dev/null || true
+  cat "$ARENA/$1.lease" 2>/dev/null || true
 }
 
 tokens() {
