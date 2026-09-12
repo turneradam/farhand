@@ -57,9 +57,17 @@ taskset -c "$pin" bash -c "$run" > "$LOG" 2>&1
 rc=$?
 
 if [ "$ok" = "exit0" ]; then
-  [ "$rc" -eq 0 ] && result=done || result=failed
+  if [ "$rc" -eq 0 ]; then
+    result="done"
+  else
+    result="failed"
+  fi
 else
-  bash -c "$ok" >/dev/null 2>&1 && result=done || result=failed
+  if bash -c "$ok" >/dev/null 2>&1; then
+    result="done"
+  else
+    result="failed"
+  fi
 fi
 
 echo "launch: exit=$rc result=$result" >&2
