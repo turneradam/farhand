@@ -43,6 +43,11 @@ engine_conf() {
   return 1
 }
 
+# state helper
+set_state() {
+  printf '%s\n' "$2" > "$1.tmp" && mv "$1.tmp" "$1"
+}
+
 pin="$(engine_conf "$ENGINE" pin)"    || { echo "launch: no pin for $ENGINE" >&2; exit 2; }
 run="$(engine_conf "$ENGINE" run)"    || { echo "launch: no run for $ENGINE" >&2; exit 2; }
 ok="$(engine_conf "$ENGINE" ok)"      || ok="exit0"
@@ -53,8 +58,25 @@ LOG="run.log"
 echo "launch: engine=$ENGINE job=$JOB pin=$pin" >&2
 echo "launch: $run" >&2
 
+# Job directory handling
+WORK="${FARHAND_WORK:-$PWD}"
+JOBDIR="$WORK/$JOB"
+
+if [ ! -d "$JOBDIR" ]; then
+  echo "launch: no job directory $JOBDIR" >&2
+  exit 2
+fi
+
+cd "$JOBDIR" || { echo "launch: cannot enter $JOBDIR" >&2; exit 2; }
+
+set_state status running
+date -u +%Y-%m-%dT%H:%M:%SZ > started
+
 taskset -c "$pin" bash -c "$run" > "$LOG" 2>&1
 rc=$?
+
+date -u +%Y-%m-%dT%H:%M:%SZ > finished
+set_state rc "$rc"
 
 if [ "$ok" = "exit0" ]; then
   if [ "$rc" -eq 0 ]; then
@@ -72,3 +94,5 @@ fi
 
 echo "launch: exit=$rc result=$result" >&2
 [ "$result" = "done" ]
+
+set_state status "$result"
