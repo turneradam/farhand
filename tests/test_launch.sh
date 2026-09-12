@@ -45,19 +45,19 @@ is()     { if [ "$2" = "$3" ]; then pass=$((pass+1)); printf '  ok   %s\n' "$1";
 l() { bash "$LAUNCH" "$@" 2>/dev/null; }
 
 has() {
-	if grep -q "$3" "$2" 2>/dev/null; then
-		pass=$((pass + 1)); printf '  ok %s\n' "$1"
-	else
-		fail=$((fail + 1)); printf '  FAIL %s (%s does not contain: %s)\n' "$1" "$2" "$3"
-	fi
+  if grep -q "$3" "$2" 2>/dev/null; then
+    pass=$((pass + 1)); printf '  ok   %s\n' "$1"
+  else
+    fail=$((fail + 1)); printf '  FAIL %s (%s does not contain: %s)\n' "$1" "$2" "$3"
+  fi
 }
 
 absent() {
-	if [ ! -e "$2" ]; then
-		pass=$((pass + 1)); printf '  ok  %s\n' "$1"
-	else
-		fail=$((fail + 1)); printf '  FAIL %s (%s exists)\n' "$1" "$2"
-	fi
+  if [ ! -e "$2" ]; then
+    pass=$((pass + 1)); printf '  ok   %s\n' "$1"
+  else
+    fail=$((fail + 1)); printf '  FAIL %s (%s exists)\n' "$1" "$2"
+  fi
 }
 
 echo "launch.sh"
