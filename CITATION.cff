@@ -4,7 +4,11 @@ title: "farhand: chat-driven orchestration of a shared computational-chemistry w
 abstract: >-
   Submit, monitor, arbitrate and post-process computational chemistry jobs on a
   single shared workstation from a chat client, with no shell access to the
-  machine.
+  machine. This release provides two components: a lease-based resource
+  arbiter that lets engines with disjoint resource requirements run
+  concurrently on one machine, and a job runner that pins each calculation to a
+  CPU set, captures its output, and judges success by a per-engine rule rather
+  than by exit code alone.
 type: software
 authors:
   - family-names: Turner
@@ -12,7 +16,7 @@ authors:
     affiliation: "Ateneo de Manila University"
     orcid: "https://orcid.org/0000-0002-0579-7982"
 version: 0.1.0
-date-released: 2026-07-30
+date-released: 2026-09-12
 license: MIT
 repository-code: "https://github.com/turneradam/farhand"
 keywords:
@@ -20,3 +24,4 @@ keywords:
   - workflow
   - remote execution
   - resource scheduling
+  - high-throughput screening

@@ -1,0 +1,28 @@
+# farhand engine definitions.
+# pin = CPU list for taskset. Pinning is not optional on hybrid-core CPUs: an
+#       MPI job advances at the pace of its slowest rank.
+# run = the command; __JOB__ is replaced with the job name.
+# ok  = how to tell whether it actually worked. "exit0" trusts the exit code;
+#       anything else is a command run in the job directory, judged by its own
+#       exit status. Scientific codes disagree about how they report failure,
+#       which is why this is a command and not a flag.
+
+[qe]
+pin = 2-15
+run = mpirun -np 12 pw.x -in __JOB__.in
+ok  = grep -q 'JOB DONE' run.log
+
+[orca]
+pin = 2-15
+run = orca __JOB__.inp
+ok  = grep -q 'ORCA TERMINATED NORMALLY' run.log
+
+[lammps]
+pin = 0-1
+run = mpirun -np 2 lmp -k on g 2 -sf kk -pk kokkos -in in.lammps
+ok  = exit0
+
+[raspa]
+pin = 2-15
+run = simulate -i simulation.input
+ok  = grep -q 'Average loading absolute' run.log
