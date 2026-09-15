@@ -58,3 +58,31 @@ case "${1:-}" in
   status) status ;;
   *) echo "usage: watcher.sh {start <engine> <job>|status}" >&2; exit 2 ;;
 esac
+
+TRIG="$STATE/triggers"
+mkdir -p "$TRIG"
+
+# trigger <cmd> <engine> <job>: drop a request file for the watcher to notice.
+trigger() {
+  local cmd="$1" engine="$2" job="$3" ts
+  ts="$(date +%s.%N)"
+  touch "$TRIG/$cmd.$engine.$job.$ts"
+}
+
+# next_trigger: print "cmd engine job" for the oldest trigger and remove its
+# file, or print nothing if the queue is empty.
+next_trigger() {
+  local f base cmd engine job
+
+  f="$(ls -1 "$TRIG" 2>/dev/null | sort | head -n 1)"
+  [ -n "$f" ] || return 1
+
+  rm -f "$TRIG/$f"
+
+  base="$f"
+  cmd="${base%%.*}";    base="${base#*.}"
+  engine="${base%%.*}"; base="${base#*.}"
+  job="${base%%.*}"
+
+  printf '%s %s %s\n' "$cmd" "$engine" "$job"
+}
