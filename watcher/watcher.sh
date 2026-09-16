@@ -21,6 +21,47 @@ alive() {
 }
 
 # --- commands ---------------------------------------------------------------
+TRIG="$STATE/triggers"
+mkdir -p "$TRIG"
+
+# trigger <cmd> <engine> <job>: drop a request file for the watcher to notice.
+trigger() {
+  local cmd="$1" engine="$2" job="$3" ts
+  ts="$(date +%s.%N)"
+  touch "$TRIG/$cmd.$engine.$job.$ts"
+}
+
+# next_trigger: print "cmd engine job" for the oldest trigger and remove its
+# file, or print nothing if the queue is empty.
+next_trigger() {
+  local f base cmd engine job
+
+  f="$(ls -1 "$TRIG" 2>/dev/null | sort | head -n 1)"
+  [ -n "$f" ] || return 1
+
+  rm -f "$TRIG/$f"
+
+  base="$f"
+  cmd="${base%%.*}";    base="${base#*.}"
+  engine="${base%%.*}"; base="${base#*.}"
+  job="${base%%.*}"
+
+  printf '%s %s %s\n' "$cmd" "$engine" "$job"
+}
+
+tick() {
+	local t cmd engine job
+
+	t="$(next_trigger)" || return 0
+	read -r cmd engine job <<< "$t"
+
+	case "$cmd" in
+		run) start "$engine" "$job" ;;
+		kill) kill_job ;;
+		*) echo "watcher: unknown comman: $cmd" >&2 ;;
+	esac
+}
+
 
 start() {
   local engine="$1" job="$2"
@@ -52,37 +93,20 @@ status() {
   fi
 }
 
+run_loop() {
+	local poll="${FARHAND_POLL:-30}"
+	echo "watcher up (poll ${poll}s)"
+	while true; do
+		tick
+		sleep "$poll"
+	done
+}
+
 case "${1:-}" in
   start)  start "${2:?usage: watcher.sh start <engine> <job>}" \
                 "${3:?usage: watcher.sh start <engine> <job>}" ;;
   status) status ;;
+  run) run_loop ;;
   *) echo "usage: watcher.sh {start <engine> <job>|status}" >&2; exit 2 ;;
 esac
 
-TRIG="$STATE/triggers"
-mkdir -p "$TRIG"
-
-# trigger <cmd> <engine> <job>: drop a request file for the watcher to notice.
-trigger() {
-  local cmd="$1" engine="$2" job="$3" ts
-  ts="$(date +%s.%N)"
-  touch "$TRIG/$cmd.$engine.$job.$ts"
-}
-
-# next_trigger: print "cmd engine job" for the oldest trigger and remove its
-# file, or print nothing if the queue is empty.
-next_trigger() {
-  local f base cmd engine job
-
-  f="$(ls -1 "$TRIG" 2>/dev/null | sort | head -n 1)"
-  [ -n "$f" ] || return 1
-
-  rm -f "$TRIG/$f"
-
-  base="$f"
-  cmd="${base%%.*}";    base="${base#*.}"
-  engine="${base%%.*}"; base="${base#*.}"
-  job="${base%%.*}"
-
-  printf '%s %s %s\n' "$cmd" "$engine" "$job"
-}
