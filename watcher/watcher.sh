@@ -50,16 +50,16 @@ next_trigger() {
 }
 
 tick() {
-	local t cmd engine job
+  local t cmd engine job
 
-	t="$(next_trigger)" || return 0
-	read -r cmd engine job <<< "$t"
+  t="$(next_trigger)" || return 0
+  read -r cmd engine job <<< "$t"
 
-	case "$cmd" in
-		run) start "$engine" "$job" ;;
-		kill) kill_job ;;
-		*) echo "watcher: unknown comman: $cmd" >&2 ;;
-	esac
+  case "$cmd" in
+    run) start "$engine" "$job" ;;
+    kill) kill_job ;;
+    *) echo "watcher: unknown comman: $cmd" >&2 ;;
+  esac
 }
 
 
@@ -93,13 +93,39 @@ status() {
   fi
 }
 
+# reconcile: work out whether a job from a previous watcher is still running.
+# Called once at startup, before the poll loop.
+#
+# A backgrounded job is not a child of this process -- it survived the watcher
+# that started it. So a pid file is a claim to be verified against the kernel,
+# never trusted on its own.
+
+reconcile() {
+  local pid
+  
+  if [ ! -f "$STATE/job.pid" ]; then
+    echo "reconcile: idle"
+    return 0
+  fi
+
+  pid="$(cat "$STATE/job.pid")"
+
+  if alive "$pid"; then
+    echo "reconcile: adopted $(cat "$STATE/job.name") (pid $pid)"
+    return 0
+  fi
+
+  echo "reconcile: cleaning stale $(cat "$STATE/job.name") (pid $pid)"
+  rm -f "$STATE/job.pid" "$STATE/job.name"
+}
 run_loop() {
-	local poll="${FARHAND_POLL:-30}"
-	echo "watcher up (poll ${poll}s)"
-	while true; do
-		tick
-		sleep "$poll"
-	done
+  local poll="${FARHAND_POLL:-30}"
+  reconcile
+  echo "watcher up (poll ${poll}s)"
+  while true; do
+    tick
+    sleep "$poll"
+  done
 }
 
 case "${1:-}" in
