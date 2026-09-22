@@ -24,9 +24,9 @@ mkdir -p "$STATE"
 alive() {
   local pid="$1" boot
 
-  kill -0 "pid" 2>/dev/null || return 1
+  kill -0 "$pid" 2>/dev/null || return 1
 
-  # a reboot means every recoreded pid is meaningless
+  # a reboot means every recorded pid is meaningless
   if [ -f "$STATE/job.boot" ]; then
     boot="$(cat /proc/sys/kernel/random/boot_id 2>/dev/null || true)"
     [ "$boot" = "$(cat "$STATE/job.boot")" ] || return 1
@@ -78,8 +78,7 @@ tick() {
 
   case "$cmd" in
     run) start "$engine" "$job" ;;
-    kill) kill_job ;;
-    *) echo "watcher: unknown comman: $cmd" >&2 ;;
+    *) echo "watcher: unknown command: $cmd" >&2 ;;
   esac
 }
 
