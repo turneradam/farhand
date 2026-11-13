@@ -83,5 +83,12 @@ FARHAND_POLL=1 timeout 2 bash "$WATCHER_SH" run >/dev/null 2>&1
 is "trigger starts the job"  "$(cat "$FARHAND_STATE/job.name" 2>/dev/null)"  "j4"
 is "trigger file is consumed"  "$(ls -A "$FARHAND_STATE/triggers")"  ""
 
+# job names may contain dots. only the trailing timestamp is stripped
+rm -f "$FARHAND_STATE"/job.*
+pkill -f "$TMP/launch.sh" 2>/dev/null
+touch "$FARHAND_STATE/triggers/run.qe.h2o.v2.$(date +%s.%N)"
+FARHAND_POLL=1 timeout 2 bash "$WATCHER_SH" run >/dev/null 2>&1
+is "dotted job name survives" "$(cat "$FARHAND_STATE/job.name" 2>/dev/null)" "h2o.v2"
+
 printf '\n%d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
