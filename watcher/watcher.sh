@@ -65,7 +65,7 @@ next_trigger() {
   base="$f"
   cmd="${base%%.*}";    base="${base#*.}"
   engine="${base%%.*}"; base="${base#*.}"
-  job="${base%%.*}"
+  job="${base%.*.*}"
 
   printf '%s %s %s\n' "$cmd" "$engine" "$job"
 }
